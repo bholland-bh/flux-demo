@@ -1,0 +1,34 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: stackgres-operator
+  namespace: stackgres
+spec:
+  chart:
+    spec:
+      chart: stackgres-operator
+      sourceRef:
+        kind: HelmRepository
+        name: stackgres
+        namespace: flux-system
+      version: 1.7.0
+  interval: 15m
+  releaseName: stackgres
+  timeout: 10m
+  values:
+    operator:
+      image:
+        tag: 1.7.0-jvm
+    restapi:
+      image:
+        tag: 1.7.0-jvm
+    jobs:
+      image:
+        tag: 1.7.0-jvm
+    adminui:
+      service:
+        exposeHTTP: true
+    cert:
+      certManager:
+        autoConfigure: true

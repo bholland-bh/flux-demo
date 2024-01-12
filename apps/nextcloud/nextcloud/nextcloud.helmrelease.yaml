@@ -1,0 +1,81 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  chart:
+    spec:
+      chart: nextcloud
+      version: 4.5.10
+      sourceRef:
+        kind: HelmRepository
+        name: nextcloud
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  releaseName: nextcloud
+  values:
+    nextcloud:
+      host: nextcloud.domain2.example.com
+      phpConfigs:
+        special-php.conf: |-
+          upload_max_filesize = 10240M
+          post_max_size = 10240M
+          max_memory_size = 4096M
+          max_input_time = 3600s
+          max_execution_time = 3600s
+    extraSidecarContainers:
+      - name: nextcloud-logger
+        image: busybox
+        command: [/bin/sh, -c, 'while ! test -f "/run/nextcloud/data/nextcloud.log"; do sleep 1; done; tail -n+1 -f /run/nextcloud/data/nextcloud.log']
+        volumeMounts:
+          - name: nextcloud-data
+            mountPath: /run/nextcloud/data
+            readOnly: true
+    podSecurityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
+      runAsUser: 1000
+      runAsGroup: 1000
+      # runAsNonRoot: true
+      readOnlyRootFilesystem: false
+    internalDatabase:
+      enabled: false
+    externalDatabase:
+      enabled: true
+      type: postgresql
+      host: postgres-primary.nextcloud.svc.cluster.local
+      user: nextcloud
+      password: nextcloud
+      database: nextcloud
+    redis:
+      enabled: true
+      image:
+        repository: library/redis
+        tag: 7.2.4-bookworm
+      auth:
+        enabled: false
+    cronjob:
+      enabled: true
+    persistence:
+      enabled: true
+      existingClaim: nextcloud
+      nextcloudData:
+        enabled: true
+        existingClaim: nextcloud-data
+    resources:
+      requests:
+        cpu: '.5'
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 4Gi
+    startupProbe:
+      enabled: true
+    metrics:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      jobLabel: nextcloud

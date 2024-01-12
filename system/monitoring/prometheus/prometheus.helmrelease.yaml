@@ -1,0 +1,41 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      version: 55.6.0
+  install:
+    crds: CreateReplace
+  interval: 15m
+  releaseName: prometheus
+  timeout: 5m
+  upgrade:
+    crds: CreateReplace
+  values:
+    alertmanagerSpec:
+      storage:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOncePod"]
+            resources:
+              requests:
+                storage: 50Gi
+            storageClassName: longhorn-ssd
+    prometheusSpec:
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOncePod"]
+            resources:
+              requests:
+                storage: 50Gi
+            storageClassName: longhorn-ssd

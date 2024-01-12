@@ -1,0 +1,47 @@
+# Formats logs as JSON, dumps to stdout
+# attaches to GatewayGlass
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: eg-config
+  namespace: envoy-gateway
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+  telemetry:
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              log_source: "[envoy-gateway]"
+              AUTHORITY: "%REQ(:AUTHORITY)%"
+              BYTES_RECEIVED: "%BYTES_RECEIVED%"
+              BYTES_SENT: "%BYTES_SENT%"
+              DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT: "%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%"
+              DOWNSTREAM_TLS_CIPHER: "%DOWNSTREAM_TLS_CIPHER%"
+              DOWNSTREAM_TLS_VERSION: "%DOWNSTREAM_TLS_VERSION%"
+              DURATION: "%DURATION%"
+              MESSAGE: "%LOCAL_REPLY_BODY%"
+              PROTOCOL: "%PROTOCOL%"
+              REQ_METHOD: "%REQ(:METHOD)%"
+              RESPONSE_CODE: "%RESPONSE_CODE%"
+              RESPONSE_FLAGS: "%RESPONSE_FLAGS%"
+              ROUTE_NAME: "%ROUTE_NAME%"
+              START_TIME: "%START_TIME%"
+              STATUS: "%RESPONSE_CODE%"
+              UPSTREAM_HOST: "%UPSTREAM_HOST%"
+              USER-AGENT: "%REQ(USER-AGENT)%"
+              X-CLIENT-TRACE-ID: "%REQ(X-CLIENT-TRACE-ID)%"
+              X-ENVOY-FORCE-TRACE: "%REQ(X-ENVOY-FORCE-TRACE)%"
+              X-ENVOY-ORIGINAL-PATH: "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+              X-ENVOY-UPSTREAM-SERVICE-TIME: "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
+              X-FORWARDED-FOR: "%REQ(X-FORWARDED-FOR)%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout

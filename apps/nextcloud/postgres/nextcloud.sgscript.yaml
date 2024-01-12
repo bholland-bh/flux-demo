@@ -1,0 +1,13 @@
+apiVersion: stackgres.io/v1
+kind: SGScript
+metadata:
+ name: setup-nextcloud
+ namespace: nextcloud
+spec:
+ scripts:
+    - name: setup nextcloud user
+      script: |
+        CREATE USER nextcloud WITH PASSWORD 'nextcloud';
+    - name: setup nextcloud db
+      script: |
+        CREATE DATABASE nextcloud WITH OWNER nextcloud;

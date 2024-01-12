@@ -1,0 +1,17 @@
+---
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-microsd
+  namespace: longhorn
+parameters:
+  dataLocality: best-effort
+  diskSelector: microsd
+  fromBackup: ''
+  fsType: ext4
+  nodeSelector: storage
+  numberOfReplicas: '3'
+  staleReplicaTimeout: '2880'
+provisioner: driver.longhorn.io
+reclaimPolicy: Retain

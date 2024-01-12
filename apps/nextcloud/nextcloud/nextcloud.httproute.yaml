@@ -1,0 +1,130 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  parentRefs:
+    - name: eg
+      namespace: envoy-gateway
+  hostnames:
+    - nextcloud.domain2.example.com
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: nextcloud
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/webfinger
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplaceFullPath
+            replaceFullPath: /index.php/.well-known/webfinger
+
+    - backendRefs:
+        - kind: Service
+          name: nextcloud
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/nodeinfo
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplaceFullPath
+            replaceFullPath: /index.php/.well-known/nodeinfo
+
+    - backendRefs:
+        - kind: Service
+          name: nextcloud
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/host-meta
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplaceFullPath
+            replaceFullPath: /public.php?service=host-meta
+
+    - backendRefs:
+        - kind: Service
+          name: nextcloud
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/host-meta.json
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplaceFullPath
+            replaceFullPath: /public.php?service=host-meta-json
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/carddav
+        - path:
+            type: PathPrefix
+            value: /.well-known/caldav
+      filters:
+      - requestRedirect:
+            scheme: https
+            statusCode: 301
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /remote.php/dav
+        type: RequestRedirect
+
+    - backendRefs:
+        - kind: Service
+          name: nextcloud
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+      - type: ResponseHeaderModifier
+        responseHeaderModifier:
+          set:
+          - name: "Strict-Transport-Security"
+            value: "max-age=15552000;"
+
+
+# ingress:
+#   annotations:
+#     nginx.ingress.kubernetes.io/server-snippet: |-
+#       server_tokens off;
+#       proxy_hide_header X-Powered-By;
+#       rewrite ^/.well-known/webfinger /index.php/.well-known/webfinger last;
+#       rewrite ^/.well-known/nodeinfo /index.php/.well-known/nodeinfo last;
+#       rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
+#       rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json;
+#       location = /.well-known/carddav {
+#         return 301 $scheme://$host/remote.php/dav;
+#       }
+#       location = /.well-known/caldav {
+#         return 301 $scheme://$host/remote.php/dav;
+#       }
+#       location = /robots.txt {
+#         allow all;
+#         log_not_found off;
+#         access_log off;
+#       }
+#       location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
+#         deny all;
+#       }
+#       location ~ ^/(?:autotest|occ|issue|indie|db_|console) {
+#         deny all;
+#       }

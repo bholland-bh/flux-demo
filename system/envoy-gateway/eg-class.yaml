@@ -1,0 +1,14 @@
+# This file sets up the GatewayClass, that will can be instantiated by any number of Gateway's
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: eg-config
+    namespace: envoy-gateway

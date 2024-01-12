@@ -1,0 +1,19 @@
+---
+apiVersion: stackgres.io/v1
+kind: SGCluster
+metadata:
+  name: postgres
+  namespace: nextcloud
+spec:
+  instances: 3
+  nonProductionOptions: {}
+  pods:
+    persistentVolume:
+      size: 30Gi
+      storageClass: longhorn-ssd
+  postgres:
+    version: '15'
+  profile: production
+  managedSql:
+    scripts:
+      - sgScript: setup-nextcloud

@@ -1,0 +1,42 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: redis
+  namespace: auth
+spec:
+  chart:
+    spec:
+      chart: redis
+      version: 18.6.3
+      sourceRef:
+        kind: HelmRepository
+        name: bitnamicharts
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  releaseName: redis
+  values:
+    image:
+      repository: library/redis
+      tag: 7.2.4-bookworm
+    auth:
+      enabled: false
+    master:
+      persistence:
+        storageClass: longhorn-ssd
+        accessModes: ["ReadWriteOncePod"]
+        labels:
+          recurring-job.longhorn.io/hourly-snap: enabled
+          recurring-job.longhorn.io/source: enabled
+    replica:
+      persistence:
+        storageClass: longhorn-ssd
+        accessModes: ["ReadWriteOncePod"]
+        labels:
+          recurring-job.longhorn.io/hourly-snap: enabled
+          recurring-job.longhorn.io/source: enabled
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        namespace: monitoring

@@ -1,0 +1,30 @@
+---
+# Source: k3s-base/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chartmuseum
+---
+# Source: k3s-base/templates/kustomization.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: chartmuseum
+  namespace: flux-system
+spec:
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta2
+      kind: HelmRelease
+      name: chartmuseum
+      namespace: chartmuseum
+  interval: 15m0s
+  path: system/chartmuseum
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: chartmuseum
+  timeout: 3m0s
+  wait: true

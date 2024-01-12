@@ -1,0 +1,34 @@
+---
+# Source: k3s-base/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway
+---
+# Source: k3s-base/templates/kustomization.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: envoy-gateway
+  namespace: flux-system
+spec:
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta2
+      kind: HelmRelease
+      name: envoy-gateway
+      namespace: envoy-gateway
+    - apiVersion: gateway.networking.k8s.io/v1
+      kind: Gateway
+      name: eg
+      namespace: envoy-gateway
+  interval: 15m0s
+  path: system/envoy-gateway
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: envoy-gateway
+  timeout: 3m0s
+  wait: true

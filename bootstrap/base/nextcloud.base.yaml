@@ -1,0 +1,25 @@
+---
+# Source: k3s-base/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nextcloud
+---
+# Source: k3s-base/templates/kustomization.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: nextcloud
+  namespace: flux-system
+spec:
+  interval: 15m0s
+  path: apps/nextcloud
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: nextcloud
+  timeout: 3m0s
+  wait: true
